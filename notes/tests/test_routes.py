@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from multiprocessing.connection import Client
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -14,7 +15,11 @@ class TestRoutes(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Лев Толстой')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
         cls.reader = User.objects.create(username='Читатель простой')
+        cls.reader_client = Client()
+        cls.reader_client.force_login(cls.reader)
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
@@ -23,22 +28,29 @@ class TestRoutes(TestCase):
         )
 
     def test_pages_availability(self):
+        '''
+        Проверяем дооступность страниц для всех пользователей.
+        '''
         urls = (
             ('notes:home', None),
             ('users:login', None),
             ('users:logout', None),
             ('users:signup', None),
         )
-        for name, args in urls:
+        for name in urls:
             with self.subTest(name=name):
-                url = reverse(name, args=args)
+                url = reverse(name)
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_availability_for_note_edit_and_delete(self):
+        '''
+        Проверяем доступность отдельной страницы, ее редактирования и удаления
+        для автора и для другого пользователя.
+        '''
         users_statuses = (
-            (self.author, HTTPStatus.OK),
-            (self.reader, HTTPStatus.NOT_FOUND),
+            (self.author_client, HTTPStatus.OK),
+            (self.reader_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
             self.client.force_login(user)
@@ -50,16 +62,37 @@ class TestRoutes(TestCase):
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):
+        '''
+        Проверяем редиректы для анонимуса.
+        '''
         login_url = reverse('users:login')
 
         for name, args in (
             ('notes:list', None),
+            ('notes:success', None),
+            ('notes:add', None),
+            ('notes:detail', (self.note.slug,))
             ('notes:edit', (self.note.slug,)),
             ('notes:delete', (self.note.slug,)),
-            ('notes:success', None),
         ):
             with self.subTest(name=name):
                 url = reverse(name, args=args)
                 redirect_url = f'{login_url}?next={url}'
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)
+
+    def test_only_auth_user(self):
+        '''
+        Проверяем, что только авторизированный пользователь может
+        переходть к данным страницам.
+        '''
+        urls = (
+            ('notes:list'),
+            ('notes:success'),
+            ('notes:add'),
+        )
+        for name in urls:
+            with self.subTest(name=name):
+                url = reverse(name)
+                response = self.author_client.get(url)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
