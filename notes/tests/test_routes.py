@@ -1,8 +1,7 @@
 from http import HTTPStatus
-from multiprocessing.connection import Client
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from notes.models import Note
@@ -17,9 +16,9 @@ class TestRoutes(TestCase):
         cls.author = User.objects.create(username='Лев Толстой')
         cls.author_client = Client()
         cls.author_client.force_login(cls.author)
-        cls.reader = User.objects.create(username='Читатель простой')
-        cls.reader_client = Client()
-        cls.reader_client.force_login(cls.reader)
+        cls.not_author = User.objects.create(username='Читатель простой')
+        cls.not_author_client = Client()
+        cls.not_author_client.force_login(cls.not_author)
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
@@ -32,10 +31,10 @@ class TestRoutes(TestCase):
         Проверяем дооступность страниц для всех пользователей.
         '''
         urls = (
-            ('notes:home', None),
-            ('users:login', None),
-            ('users:logout', None),
-            ('users:signup', None),
+            ('notes:home'),
+            ('users:login'),
+            ('users:logout'),
+            ('users:signup'),
         )
         for name in urls:
             with self.subTest(name=name):
@@ -50,15 +49,13 @@ class TestRoutes(TestCase):
         '''
         users_statuses = (
             (self.author_client, HTTPStatus.OK),
-            (self.reader_client, HTTPStatus.NOT_FOUND),
+            (self.not_author_client, HTTPStatus.NOT_FOUND),
         )
         for user, status in users_statuses:
-            self.client.force_login(user)
-
             for name in ('notes:detail', 'notes:edit', 'notes:delete'):
                 with self.subTest(user=user, name=name):
                     url = reverse(name, args=(self.note.slug,))
-                    response = self.client.get(url)
+                    response = user.get(url)
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):
@@ -71,7 +68,7 @@ class TestRoutes(TestCase):
             ('notes:list', None),
             ('notes:success', None),
             ('notes:add', None),
-            ('notes:detail', (self.note.slug,))
+            ('notes:detail', (self.note.slug,)),
             ('notes:edit', (self.note.slug,)),
             ('notes:delete', (self.note.slug,)),
         ):
