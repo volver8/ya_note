@@ -27,9 +27,9 @@ class TestRoutes(TestCase):
         )
 
     def test_pages_availability(self):
-        '''
-        Проверяем дооступность страниц для всех пользователей.
-        '''
+        """
+        Проверка доступности страниц для анонимуса.
+        """
         urls = (
             ('notes:home'),
             ('users:login'),
@@ -43,10 +43,10 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_availability_for_note_edit_and_delete(self):
-        '''
-        Проверяем доступность отдельной страницы, ее редактирования и удаления
-        для автора и для другого пользователя.
-        '''
+        """
+        Проверка автору доступны страницы редактирования/удаления,
+        а не автору - нет.
+        """
         users_statuses = (
             (self.author_client, HTTPStatus.OK),
             (self.not_author_client, HTTPStatus.NOT_FOUND),
@@ -59,9 +59,9 @@ class TestRoutes(TestCase):
                     self.assertEqual(response.status_code, status)
 
     def test_redirect_for_anonymous_client(self):
-        '''
-        Проверяем редиректы для анонимуса.
-        '''
+        """
+        Проверка редиректа для анонимуса.
+        """
         login_url = reverse('users:login')
 
         for name, args in (
@@ -79,10 +79,9 @@ class TestRoutes(TestCase):
                 self.assertRedirects(response, redirect_url)
 
     def test_only_auth_user(self):
-        '''
-        Проверяем, что только авторизированный пользователь может
-        переходть к данным страницам.
-        '''
+        """
+        Проверка только автору доступны страницы.
+        """
         urls = (
             ('notes:list'),
             ('notes:success'),
