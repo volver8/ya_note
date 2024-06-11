@@ -33,10 +33,9 @@ class TestListPage(TestCase):
         cls.list_url = reverse('notes:list')
 
     def test_for_author_and_not_author_list(self):
-        '''
-        Проверяем наличие отдельной заметки в object_list и
-        проверяем, не попадают ли туда заметки другого автора.
-        '''
+        """
+        Проверка чужие записи не попадают на страницу list.
+        """
         params = (
             (self.author_client, True),
             (self.not_author_client, False)
@@ -48,10 +47,10 @@ class TestListPage(TestCase):
                 self.assertEqual((self.note in object_list), note_in_list)
 
     def test_add_or_edit_has_form(self):
-        '''
-        Проверяем наличие формы на страницах добавления и
-        редактирования заметки.
-        '''
+        """
+        Проверка авторизированные пользователи могут добавлять
+        и редактировать заметки.
+        """
         urls = (
             ('notes:add', None),
             ('notes:edit', (self.note.slug,)),
