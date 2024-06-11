@@ -117,7 +117,8 @@ class TestPostEditDelete(TestCase):
 
     def test_user_cant_delete_note_of_another_user(self):
         """
-        Проверка авторизированный пользователь не может удалять чужие записи.
+        Проверка авторизированный пользователь
+        не может удалять чужие записи.
         """
         response = self.reader_client.delete(self.delete_url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
@@ -125,9 +126,7 @@ class TestPostEditDelete(TestCase):
         self.assertEqual(notes_count, 1)
 
     def test_author_can_edit_note(self):
-        """
-        Проверка автор может редактировать свои записи.
-        """
+        """Проверка автор может редактировать свои записи."""
         response = self.author_client.post(self.edit_url, data=self.form_data)
         self.assertRedirects(response, self.success_url)
         self.note.refresh_from_db()

@@ -33,9 +33,7 @@ class TestListPage(TestCase):
         cls.list_url = reverse('notes:list')
 
     def test_for_author_and_not_author_list(self):
-        """
-        Проверка чужие записи не попадают на страницу list.
-        """
+        """Проверка чужие записи не попадают на страницу list."""
         params = (
             (self.author_client, True),
             (self.not_author_client, False)
