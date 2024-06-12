@@ -48,7 +48,7 @@ class TestPostCreation(TestCase):
 
     def test_slug_must_be_unique(self):
         """Проверка слага на уникальность."""
-        note = Note.objects.create(
+        Note.objects.create(
             title=self.NOTE_TITLE,
             text=self.NOTE_TEXT,
             slug=self.NOTE_SLUG,
@@ -116,9 +116,7 @@ class TestPostEditDelete(TestCase):
         self.assertEqual(notes_count, 0)
 
     def test_user_cant_delete_note_of_another_user(self):
-        """
-        Пользователь не может удалять чужие заметки.
-        """
+        """Пользователь не может удалять чужие заметки."""
         response = self.reader_client.delete(self.delete_url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         notes_count = Note.objects.count()
@@ -134,9 +132,7 @@ class TestPostEditDelete(TestCase):
         self.assertEqual(self.note.slug, self.form_data['slug'])
 
     def test_user_cant_edit_note_of_another_user(self):
-        """
-        Пользователь не может редактировать чужие заметки.
-        """
+        """Пользователь не может редактировать чужие заметки."""
         response = self.reader_client.post(self.edit_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.assertEqual(self.note.title, self.NOTE_TITLE)

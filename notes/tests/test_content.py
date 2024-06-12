@@ -48,9 +48,7 @@ class TestListPage(TestCase):
                 self.assertEqual((self.note in object_list), note_in_list)
 
     def test_add_or_edit_has_form(self):
-        """
-        На страницы создания и редактирования заметки передаются формы.
-        """
+        """На страницы создания и редактирования заметки передаются формы."""
         urls = (
             ('notes:add', None),
             ('notes:edit', (self.note.slug,)),
