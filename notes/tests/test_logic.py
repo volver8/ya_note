@@ -48,12 +48,12 @@ class TestPostCreation(TestCase):
 
     def test_slug_must_be_unique(self):
         """Проверка слага на уникальность."""
-        form_data = {
-            'title': self.NOTE_TITLE,
-            'text': self.NOTE_TEXT,
-            'slug': self.NOTE_SLUG
-        }
-        self.author_client.post(self.add_url, data=form_data)
+        note = Note.objects.create(
+            title=self.NOTE_TITLE,
+            text=self.NOTE_TEXT,
+            slug=self.NOTE_SLUG,
+            author=self.author
+        )
         notes_count = Note.objects.count()
         self.assertEqual(notes_count, 1)
         response = self.author_client.post(self.add_url, data=self.form_data)
@@ -67,7 +67,7 @@ class TestPostCreation(TestCase):
         self.assertEqual(notes_count, 1)
 
     def test_slugify_method(self):
-        """Проверка метода slugify."""
+        """Проверка автоматического создания слага"""
         self.form_data.pop('slug')
         response = self.author_client.post(self.add_url, data=self.form_data)
         self.assertRedirects(response, self.success_url)
@@ -109,7 +109,7 @@ class TestPostEditDelete(TestCase):
         cls.success_url = reverse('notes:success')
 
     def test_author_can_delete_note(self):
-        """Проверка автор может удалять свои записи."""
+        """Пользователь может удалять свои заметки."""
         response = self.author_client.delete(self.delete_url)
         self.assertRedirects(response, self.success_url)
         notes_count = Note.objects.count()
@@ -117,8 +117,7 @@ class TestPostEditDelete(TestCase):
 
     def test_user_cant_delete_note_of_another_user(self):
         """
-        Проверка авторизированный пользователь
-        не может удалять чужие записи.
+        Пользователь не может удалять чужие заметки.
         """
         response = self.reader_client.delete(self.delete_url)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
@@ -126,7 +125,7 @@ class TestPostEditDelete(TestCase):
         self.assertEqual(notes_count, 1)
 
     def test_author_can_edit_note(self):
-        """Проверка автор может редактировать свои записи."""
+        """Пользователь может редактировать свои заметки."""
         response = self.author_client.post(self.edit_url, data=self.form_data)
         self.assertRedirects(response, self.success_url)
         self.note.refresh_from_db()
@@ -136,8 +135,7 @@ class TestPostEditDelete(TestCase):
 
     def test_user_cant_edit_note_of_another_user(self):
         """
-        Проверка авторизированный пользователь не может редактировать
-        чужие записи.
+        Пользователь не может редактировать чужие заметки.
         """
         response = self.reader_client.post(self.edit_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)

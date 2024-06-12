@@ -33,7 +33,10 @@ class TestListPage(TestCase):
         cls.list_url = reverse('notes:list')
 
     def test_for_author_and_not_author_list(self):
-        """Проверка чужие записи не попадают на страницу list."""
+        """
+        Отдельная заметка передаётся на страницу со списком заметок,
+        чужие заметки не попадают в список заметок.
+        """
         params = (
             (self.author_client, True),
             (self.not_author_client, False)
@@ -46,8 +49,7 @@ class TestListPage(TestCase):
 
     def test_add_or_edit_has_form(self):
         """
-        Проверка авторизированные пользователи могут добавлять
-        и редактировать заметки.
+        На страницы создания и редактирования заметки передаются формы.
         """
         urls = (
             ('notes:add', None),

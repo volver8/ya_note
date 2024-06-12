@@ -75,7 +75,7 @@ class TestRoutes(TestCase):
                 self.assertRedirects(response, redirect_url)
 
     def test_only_auth_user(self):
-        """Проверка только автору доступны страницы."""
+        """Проверка только авторизованному пользователю доступны страницы."""
         urls = (
             ('notes:list'),
             ('notes:success'),
